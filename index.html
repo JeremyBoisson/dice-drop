@@ -22,7 +22,7 @@
   .row input[type=checkbox]{width:20px;height:20px;accent-color:#ffcf3a}
   .row .v{text-align:right;color:#ffe066}
   .row small{display:block;color:#a9a3c8;font-size:10px;margin-top:2px}
-  .foot{display:flex;gap:10px;padding:12px 18px;background:#221c3c}
+  .foot{display:flex;flex-wrap:wrap;gap:10px;padding:12px 18px;background:#221c3c}
   .btn{font:700 15px "Silkscreen",monospace;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;color:#fff;box-shadow:3px 4px 0 rgba(0,0,0,.45)}
   .btn:hover{transform:translateY(-2px)}
 </style>
@@ -37,6 +37,7 @@
     <button class="btn" style="background:#e07a1f" onclick="resetTab()">RESET TAB</button>
     <button class="btn" style="background:#c2365a" onclick="resetAll()">RESET ALL</button>
     <button class="btn" style="background:#7a2340" onclick="resetProgress()">RESET PROGRESS</button>
+    <button class="btn" style="background:#3a6fd8" onclick="unlockAll()">UNLOCK ALL</button>
     <div style="flex:1"></div>
     <button class="btn" style="background:#1f9c7a" onclick="closeSettings()">DONE</button>
   </div>
@@ -97,7 +98,10 @@ const CFG_DEF = {
     ['pegSpacing','Peg spacing',0.7,1.5,0.01,0.85,'applies when a level starts'],
     ['viewH','Visible board height',250,2000,10,680,'how much of the board is visible vertically (never wider than the screen)'],
     ['zoomMul','Zoom multiplier',0.2,3,0.05,1],
-    ['scrollHold','Manual scroll hold while falling (s)',0,10,0.5,2.5,'how long the camera stays where you scrolled before following the die again'],    ['holeSizeBias','Hole size vs value',0,2,0.05,0.8,'0 = equal holes; higher = stronger holes get narrower'],
+    ['scrollHold','Manual scroll hold while falling (s)',0,10,0.5,2.5,'how long the camera stays where you scrolled before following the die again'],    ['holeSizeBias','Hole size vs value',-1,3,0.05,0.8,'0 = equal holes; higher = stronger holes get narrower; below 0 = stronger holes get wider'],
+    ['holeNegSubSize','Size of − holes',0.1,3,0.05,0.75,'width multiplier for subtracting holes (1 = normal)'],
+    ['holeNegMulSize','Size of negative × holes',0.1,3,0.05,0.45,'width multiplier for ×-N holes, which flip the score negative'],
+    ['holeDivSize','Size of ÷ holes',0.1,3,0.05,0.8,'width multiplier for dividing holes'],
     ['camFollow','Camera follow speed',0.5,20,0.5,5],
   ],
 };
@@ -116,6 +120,7 @@ function resetProgress(){
   if (!confirm('Reset all level progress and best scores?')) return;
   save = { unlocked:1, best:{} }; persist(); closeSettings(); state = 'menu';
 }
+function unlockAll(){ save.unlocked = LEVELS.length; persist(); closeSettings(); state = 'menu'; }
 function renderSettings(){
   const tabs = document.getElementById('tabs'); tabs.innerHTML = '';
   for (const t in CFG_DEF){ const b = document.createElement('button'); b.className = 'tab' + (t===curTab?' on':''); b.textContent = t.toUpperCase();
@@ -243,7 +248,8 @@ function buildLevel(i){
   L.pegs = kept;
   // hole width shrinks with its impact (|value|, negatives treated the same)
   const impact = ([op,v]) => (op==='*'||op==='/') ? Math.max(1.2, Math.abs(v)) : 1 + Math.abs(v)/Math.max(1, L.target*0.2);
-  const wts = d.holes.map(h => Math.pow(impact(h), -CFG.holeSizeBias)), sum = wts.reduce((a,b)=>a+b,0);
+  const kindMul = ([op,v]) => op==='-' ? CFG.holeNegSubSize : (op==='*' && v<0) ? CFG.holeNegMulSize : op==='/' ? CFG.holeDivSize : 1;
+  const wts = d.holes.map(h => Math.pow(impact(h), -CFG.holeSizeBias) * kindMul(h)), sum = wts.reduce((a,b)=>a+b,0);
   let ws = wts.map(w => Math.max(2*R + 16, w/sum*L.w));
   const sc = L.w / ws.reduce((a,b)=>a+b,0); ws = ws.map(w => w*sc);
   let hx = 0;
