@@ -48,12 +48,13 @@
 const CFG_DEF = {
   'Slow-mo': [
     ['slowOn','Slow-mo enabled',null,null,null,true],
-    ['slowWeak','Speed at low score',0.1,1,0.05,0.8,'time speed when the die score is small (1 = no slow-mo)'],
-    ['slowMid','Speed at level goal',0.05,1,0.05,0.45,'time speed when |die score| equals the level goal'],
-    ['slowStrong','Speed at max',0.05,1,0.05,0.18,'time speed when |die score| reaches goal x multiplier'],
-    ['slowMaxMult','Strongest at goal x',1,10,0.5,3,'e.g. 3 = strongest slow-mo at 3x the level goal'],
-    ['hitSlowDur','Peg hit duration (s)',0,2,0.05,0.35],
-    ['dupSlowFactor','Duplicate slow-mo factor',0,1,0.05,0.3,'scales slow-mo duration on duplicate pegs'],
+    ['slowWeak','Speed at low score',0.1,1,0.05,0.9,'time speed when the die score is small (1 = no slow-mo)'],
+    ['slowMid','Speed at level goal',0.05,1,0.05,0.75,'time speed when |die score| equals the level goal'],
+    ['slowStrong','Speed at max',0.05,1,0.05,0.5,'time speed when |die score| reaches goal x multiplier'],
+    ['slowMaxMult','Strongest at goal x',1,10,0.5,5,'e.g. 3 = strongest slow-mo at 3x the level goal'],
+    ['slowLowestN','Lowest dice that trigger',1,10,1,1,'only the N dice furthest down the board can trigger slow-mo'],
+    ['hitSlowDur','Peg hit duration (s)',0,2,0.05,0.3],
+    ['dupSlowFactor','Duplicate slow-mo factor',0,1,0.05,0.9,'scales slow-mo duration on duplicate pegs'],
     ['holeSlowDur','Hole duration (s)',0,3,0.05,0.9],
     ['slowEaseIn','Ease-in speed',1,60,1,18],
     ['slowEaseOut','Ease-out speed',0.5,20,0.5,4],
@@ -292,7 +293,16 @@ const toW = (x,y) => [ (x - W/2)/cam.s + cam.x, (y - HUD_H - (H-HUD_H)/2)/cam.s 
 function slow(scale, dur){ if (!CFG.slowOn || dur <= 0) return; slowTarget = Math.min(slowTarget, scale); slowTimer = Math.max(slowTimer, dur); }
 // slow-mo strength scales with |score| relative to the level goal:
 // 0 -> slowWeak, goal -> slowMid, goal*slowMaxMult -> slowStrong
-function slowFor(score, dur){
+// only the N lowest dice on the board (closest to the holes) may trigger slow-mo,
+// so a swarm of duplicates bouncing up top doesn't keep the game in slow motion
+function isLowestDie(d){
+  const n = Math.max(1, Math.round(CFG.slowLowestN));
+  let below = 0;
+  for (const x of dice) if (x !== d && !x.done && x.y > d.y && ++below >= n) return false;
+  return true;
+}
+function slowFor(d, score, dur){
+  if (!isLowestDie(d)) return;
   const g = Math.max(1, L.target), s = Math.abs(score), top = g*Math.max(1, CFG.slowMaxMult);
   const sp = s <= g ? CFG.slowWeak + (CFG.slowMid - CFG.slowWeak)*(s/g)
                     : CFG.slowMid + (CFG.slowStrong - CFG.slowMid)*Math.min(1, (s-g)/Math.max(1, top-g));
@@ -382,14 +392,14 @@ function hit(d, p){
     popups.push({ x:d.x, y:d.y-40, text:'DUPLICATE!', col:COL.dup, life:CFG.popupLife, max:CFG.popupLife, size:CFG.popupSize, world:true });
     lastEq = { text:'DUPLICATE!', col:COL.dup, t:1 };
     burst(d.x, d.y, COL.dup, 24, true);
-    slowFor(d.score, CFG.hitSlowDur*CFG.dupSlowFactor);
+    slowFor(d, d.score, CFG.hitSlowDur*CFG.dupSlowFactor);
     return;
   }
   const n = face + ((p.op==='+'||p.op==='-') ? p.b : 0);
   const ns = applyOp(d.score, p.op, n);
   d.pend = { face, score:ns, op:p.op, t:CFG.rollTime, text:opLabel(p.op, n) };
   if (d.pend.t <= 0) resolvePending(d);
-  slowFor(Math.max(Math.abs(d.score), Math.abs(ns)), CFG.hitSlowDur);
+  slowFor(d, Math.max(Math.abs(d.score), Math.abs(ns)), CFG.hitSlowDur);
 }
 
 function enterHole(d){
@@ -401,7 +411,7 @@ function enterHole(d){
   popups.push({ x:ho.x+ho.w/2, y:L.h-110, text, col, life:CFG.popupLife*1.5, max:CFG.popupLife*1.5, size:CFG.holePopupSize, world:true });
   lastEq = { text, col, t:1.4 };
   burst(d.x, d.y, col, 40, true); shake = CFG.shakeHole;
-  slowFor(ns, CFG.holeSlowDur);
+  slowFor(d, ns, CFG.holeSlowDur);
   d.flyDelay = CFG.flyDelay;
 }
 

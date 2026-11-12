@@ -1,0 +1,65 @@
+Setup: The game starts with a level select menu. Levels unlock as you progress (each level completed unlock the next one)
+
+Goal: Send all your dice one by one into the plinko level and try to beat the level' score
+
+Decisions: Each level represents a different challenge and is different in terms of setup. Number of poles, start entries, final holes, ... Each can be on different levels and doesn't have to be squared or triangled. Levels can also be large with a scrolling camera that follows the dice. The dice score is displayed clearly and it is satisfying to see it being modified each hit. At the end, the final dice score is added to the level score (XX/YY) in a satisfying maneer as well. When the dice fall, we see it roll clearly and it stops on a random face at each hit. Each hit is sequenced with a slowmow to give time to understand what happens and see the operation being made to the dice score. The game is in 2D with clear and colorful interface inspired from Balatro.
+
+Rules: By clicking on an entry, you throw your next available dice into the plinko. By going down, the dice roll and modify its own score when it hits a pole. Whenever he finishes and goes down, its final score is added to your total. The final drop is through a hole that acts as a stronger final operator for the score and doesn't depends on the dice, therefore it has numbers ontop of its operator. Players are presented different levels to complete with a set amount of dice. Each level is set to provide an increasing challenge coming by the setup (level design, dice variety, dice amount, score to make, ...)
+
+Obstacles: Poles each have a different amount of score and size. Some are giving +, -, *, /. Some poles also have a dice as icon, which dupplicates the dice. As the dice rolls when it falls, it makes the operation according to the dice face when hit and the pole it hit. For instance, if the dice has 12 in score, it falls, hit a * pole while its face shows 5, the score will be 12*5, resulting in 60
+
+Interactions: Players select where to first throw the dice and then observe where it falls.
+
+
+
+# Dice Drop
+
+One-line pitch: a colourful plinko game with dice. You drop dice down a board of pegs; every peg rolls the die and changes its score, and the hole it lands in at the bottom decides its final value.
+
+## Goal
+Each level gives you a set number of dice and a score target. You drop your dice one at a time, and each die's final score is added to your level total. Reach the target to clear the level and unlock the next one.
+
+## How you play
+- Aim: your next die hovers along the top of the board and follows your mouse left and right.
+- Drop: click to release it, then watch it bounce down.
+- Scroll: use the mouse wheel or trackpad to look around the level. While a die is falling, the camera goes back to following it after a short pause.
+
+## The die
+- Every die carries its own score, shown in a badge above it, along with its type (d4, d6, d8, d12 or d20).
+- Each time it hits a peg, the die rolls and lands on a random face. That face is used in the peg's operation.
+- The game slows down on each hit so you can see what happened. The higher the die's score (positive or negative) compared with the level's goal, the stronger the slow motion, so tension builds as the score grows.
+
+## Pegs
+| Peg 		| Effect 																			|
+| +(blue) 	| adds the face value, sometimes plus a bonus (e.g. `+3`) 							|
+| −(red) 	| subtracts the face value, sometimes plus a bonus 									|
+| ×(orange)	| multiplies the score by the face value 											|
+| ÷(purple)	| divides the score by the face value 												|
+| Die(gold)	| duplicates the die: a copy with the same score splits off and falls on its own 	|
+
+Example: a die with a score of 12 hits a × peg and rolls a 5, so its score becomes 60.
+
+Pegs come in different sizes, and scores can go negative.
+
+## Holes
+- At the bottom, every die falls into a hole with a fixed operation that doesn't depend on the die, such as `×5`, `+200` or `×-3`.
+- Holes are the big final swing. A good one can multiply a score many times over; a bad one can wipe it out or flip it negative and pull your total down.
+- The stronger the effect, the narrower the hole. Big rewards and big punishments are harder to hit, and negative holes are narrower still.
+
+## Scoring moment
+When a die lands, the hole's operation pops up, the screen shakes, and the die's final score flies up to the level total, which counts up (or down) as `score / target`.
+
+## Levels
+- There are 10 levels, each with its own layout: square peg grids, random scatters, rings, a funnel, tall boards with lots of vertical scrolling, and wide boards.
+- Difficulty rises through the layouts, the dice you get, the number of dice and the score target.
+- Reaching the target early: if you reach the target with dice left, you choose between NEXT LEVEL and KEEP ROLLING to chase a high score. Your best score for each level is saved.
+- Final level, Grand Cascade: a tall board full of duplicating pegs. It ends in multiplier-only risk-and-reward holes: wide `×2` and `×-1`, medium `×5` and `×-5`, and thin `×10` and `×-10`. The whole fall builds tension until that last hole.
+
+## Settings (⚙ button)
+Almost every number in the game can be tweaked, grouped into five tabs: Slow-mo, Physics, Scoring, Visuals, and Camera & Levels. There are also buttons to reset settings, reset progress, or unlock every level.
+
+## Look
+Inspired by Balatro but with its own design:
+- a swirling animated background and chunky panels with shadows
+- a pixel font and bright colours for each operation
+- particles, screen shake and a slight old-TV effect
